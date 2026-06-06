@@ -117,6 +117,22 @@ func TestValidateMatrix(t *testing.T) {
 		}
 	})
 
+	t.Run("cuadrada n×n (3×3) — válida explícitamente", func(t *testing.T) {
+		// Caso estándar: matriz cuadrada, m == n, cumple m >= n.
+		m := [][]float64{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}
+		if err := validateMatrix(m); err != nil {
+			t.Fatalf("expected no error for square 3×3, got: %v", err)
+		}
+	})
+
+	t.Run("columna única (4×1) — válida, m >> n", func(t *testing.T) {
+		// Caso: vector columna. m=4, n=1. Cumple m >= n ampliamente.
+		col := [][]float64{{1}, {2}, {3}, {4}}
+		if err := validateMatrix(col); err != nil {
+			t.Fatalf("expected no error for 4×1 column, got: %v", err)
+		}
+	})
+
 	t.Run("rectangular alta (4×3) — caso feliz", func(t *testing.T) {
 		// Caso: matriz 4×3 bien formada (más filas que columnas).
 		// Gonum QR solo acepta m >= n, así que debe pasar.
@@ -160,6 +176,36 @@ func TestComputeQR_MathProperty(t *testing.T) {
 			// Caso con decimal/flotante: verifica que la precisión se mantiene.
 			name:   "valores decimales",
 			matrix: [][]float64{{1.5, 2.5}, {3.5, 4.5}},
+		},
+		{
+			// Caso 1×1: la factorización trivial. Q = [[±1]], R = [[valor]].
+			// Q·R debe reproducir exactamente el único elemento.
+			name:   "1×1 — caso trivial",
+			matrix: [][]float64{{7}},
+		},
+		{
+			// Caso rectangular alta 4×3: Q será 4×4, R será 4×3.
+			// multiplyMatrices(Q, R) debe devolver la matriz original 4×3.
+			name: "4×3 rectangular alta — full QR",
+			matrix: [][]float64{
+				{1, 2, 3},
+				{4, 5, 6},
+				{7, 8, 9},
+				{10, 11, 12},
+			},
+		},
+		{
+			// Caso singular: rango 1, la segunda fila es múltiplo de la primera.
+			// QR siempre existe (aunque R tenga cero en la diagonal).
+			// La propiedad A = Q·R se cumple incluso para matrices singulares.
+			name:   "singular (rango 1) — [[1,2],[2,4]]",
+			matrix: [][]float64{{1, 2}, {2, 4}},
+		},
+		{
+			// Caso todo ceros: la factorización degenera en Q=I, R=0.
+			// Q·R = I·0 = 0 = A. La propiedad debe cumplirse.
+			name:   "todo ceros 2×2",
+			matrix: [][]float64{{0, 0}, {0, 0}},
 		},
 	}
 
@@ -212,6 +258,34 @@ func TestComputeQR_OutputDimensions(t *testing.T) {
 			matrix:   [][]float64{{1, 2}, {3, 4}, {5, 6}},
 			wantQRow: 3, wantQCol: 3,
 			wantRRow: 3, wantRCol: 2,
+		},
+		{
+			// Matriz 1×1: ambas matrices son escalares, Q→1×1, R→1×1.
+			name:     "1×1 trivial",
+			matrix:   [][]float64{{5}},
+			wantQRow: 1, wantQCol: 1,
+			wantRRow: 1, wantRCol: 1,
+		},
+		{
+			// Matriz rectangular alta 4×3: Q→4×4 (cuadrada), R→4×3.
+			// Las dos últimas filas de R son cero (full QR).
+			name: "4×3 tall",
+			matrix: [][]float64{
+				{1, 2, 3},
+				{4, 5, 6},
+				{7, 8, 9},
+				{10, 11, 12},
+			},
+			wantQRow: 4, wantQCol: 4,
+			wantRRow: 4, wantRCol: 3,
+		},
+		{
+			// Vector columna 4×1: Q→4×4, R→4×1.
+			// Caso extremo donde n=1.
+			name:     "4×1 vector columna",
+			matrix:   [][]float64{{1}, {2}, {3}, {4}},
+			wantQRow: 4, wantQCol: 4,
+			wantRRow: 4, wantRCol: 1,
 		},
 	}
 
