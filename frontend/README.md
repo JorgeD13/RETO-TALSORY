@@ -1,16 +1,89 @@
-# React + Vite
+# Frontend — Vite + React + Tailwind CSS
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SPA que permite ingresar una matriz numérica, enviarla a la Go API
+y visualizar las matrices Q, R y las estadísticas resultantes.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Stack
 
-## React Compiler
+| Tecnología | Uso |
+|---|---|
+| Vite 6 | Bundler y dev server |
+| React 19 | UI |
+| Tailwind CSS 4 | Estilos |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## Estructura
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```
+frontend/
+├── src/
+│   ├── api/
+│   │   └── matrix.js          # Llamada HTTP a la Go API
+│   ├── hooks/
+│   │   └── useQR.js           # Estado (loading, error, result)
+│   ├── components/
+│   │   ├── MatrixInput.jsx    # Grilla editable dinámica
+│   │   ├── MatrixDisplay.jsx  # Visualización de Q y R
+│   │   └── StatisticsDisplay.jsx  # Tarjetas de métricas
+│   ├── App.jsx                # Orquestador principal
+│   └── main.jsx               # Entry point React
+├── nginx.conf                 # Proxy /api → go-api (Docker)
+├── Dockerfile
+└── .env.example
+```
+
+---
+
+## Variables de entorno
+
+Solo necesaria en producción/Docker. En desarrollo el proxy de Vite
+redirige `/api/*` automáticamente a `localhost:8080`.
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Descripción |
+|---|---|
+| `VITE_API_URL` | URL base de la Go API (vacío = URLs relativas) |
+
+---
+
+## Ejecutar localmente
+
+Requiere que la Go API esté corriendo en `localhost:8080`.
+
+```bash
+npm install
+npm run dev
+# → http://localhost:5173
+```
+
+El proxy de Vite está configurado en `vite.config.js`:
+cualquier request a `/api/*` se redirige a `http://localhost:8080`.
+
+---
+
+## Build de producción
+
+```bash
+npm run build
+# Genera dist/ listo para servir con cualquier servidor estático
+```
+
+---
+
+## Ejecutar con Docker
+
+Desde la raíz del proyecto (`reto/`):
+
+```bash
+docker compose up --build
+# → http://localhost
+```
+
+En Docker, nginx sirve el build estático y actúa como reverse proxy:
+`/api/*` se reenvía internamente a `go-api:8080` sin exponer esa URL al browser.
