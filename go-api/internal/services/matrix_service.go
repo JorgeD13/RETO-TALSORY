@@ -97,6 +97,14 @@ func validateMatrix(matrix [][]float64) error {
 			return fmt.Errorf("row %d has %d columns, expected %d", i, len(row), cols)
 		}
 	}
+	// Gonum QR requiere m >= n (filas >= columnas).
+	// Una matriz ancha produce panic en qr.RTo().
+	if len(matrix) < cols {
+		return fmt.Errorf(
+			"matrix must have at least as many rows as columns for QR factorization (got %d×%d)",
+			len(matrix), cols,
+		)
+	}
 	return nil
 }
 

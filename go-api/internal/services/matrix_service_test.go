@@ -101,6 +101,15 @@ func TestValidateMatrix(t *testing.T) {
 		}
 	})
 
+	t.Run("ancha (3 filas × 4 cols) — Gonum no soporta m < n", func(t *testing.T) {
+		// Gonum requiere m >= n para la factorización QR.
+		// Sin esta validación, qr.RTo() produce un panic en runtime.
+		wide := [][]float64{{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}}
+		if err := validateMatrix(wide); err == nil {
+			t.Fatal("expected error for wide matrix (cols > rows)")
+		}
+	})
+
 	t.Run("1×1 — mínima matriz válida", func(t *testing.T) {
 		// Caso límite: una sola celda es una matriz válida y factorizable.
 		if err := validateMatrix([][]float64{{42}}); err != nil {
@@ -108,9 +117,10 @@ func TestValidateMatrix(t *testing.T) {
 		}
 	})
 
-	t.Run("rectangular válida — caso feliz", func(t *testing.T) {
-		// Caso: matriz 2×3 bien formada — debe pasar todas las validaciones.
-		m := [][]float64{{1, 2, 3}, {4, 5, 6}}
+	t.Run("rectangular alta (4×3) — caso feliz", func(t *testing.T) {
+		// Caso: matriz 4×3 bien formada (más filas que columnas).
+		// Gonum QR solo acepta m >= n, así que debe pasar.
+		m := [][]float64{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10, 11, 12}}
 		if err := validateMatrix(m); err != nil {
 			t.Fatalf("expected no error, got: %v", err)
 		}
