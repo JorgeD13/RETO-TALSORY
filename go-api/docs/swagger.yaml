@@ -1,0 +1,102 @@
+basePath: /
+definitions:
+  middleware.ErrorResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  models.MatrixRequest:
+    properties:
+      matrix:
+        items:
+          items:
+            format: float64
+            type: number
+          type: array
+        type: array
+    type: object
+  models.MatrixResponse:
+    properties:
+      q:
+        items:
+          items:
+            format: float64
+            type: number
+          type: array
+        type: array
+      r:
+        items:
+          items:
+            format: float64
+            type: number
+          type: array
+        type: array
+      statistics:
+        $ref: '#/definitions/models.Statistics'
+    type: object
+  models.Statistics:
+    properties:
+      average:
+        type: number
+      isDiagonalQ:
+        type: boolean
+      isDiagonalR:
+        type: boolean
+      max:
+        type: number
+      min:
+        type: number
+      sum:
+        type: number
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+  description: API REST que calcula la factorización QR de una matriz y obtiene estadísticas
+    desde Node.js.
+  license:
+    name: MIT
+  termsOfService: http://swagger.io/terms/
+  title: QR Matrix API
+  version: "1.0"
+paths:
+  /api/v1/matrix/qr:
+    post:
+      consumes:
+      - application/json
+      description: Recibe una matriz numérica, calcula Q y R con Gonum y obtiene estadísticas
+        de la API Node.js
+      parameters:
+      - description: Matriz de entrada
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.MatrixRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MatrixResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/middleware.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/middleware.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/middleware.ErrorResponse'
+      summary: Calcula la factorización QR de una matriz
+      tags:
+      - matrix
+swagger: "2.0"

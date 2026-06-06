@@ -1,0 +1,25 @@
+{
+  "name": "node-api",
+  "version": "1.0.0",
+  "description": "API Node.js que calcula estadísticas sobre las matrices Q y R recibidas desde la API Go.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest --coverage"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.4",
+    "supertest": "^7.2.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
